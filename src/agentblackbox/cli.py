@@ -82,6 +82,23 @@ def cmd_replay(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_view(args: argparse.Namespace) -> int:
+    from .viewer import render_report
+
+    html = render_report(args.trace, key=_key())
+    Path(args.output).write_text(html, encoding="utf-8")
+    print(f"wrote {args.output} ({len(html)} bytes, self-contained)")
+    return 0
+
+
+def cmd_demo(args: argparse.Namespace) -> int:
+    from .demo import run_demo
+
+    policy = Path(args.policy) if args.policy else _policies_dir() / "default.yaml"
+    print("\n".join(run_demo(policy, Path(args.out_dir))))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="abb", description="AgentBlackBox: flight recorder and policy firewall for AI agents."
@@ -106,26 +123,21 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--json", action="store_true", help="machine-readable output")
     p.set_defaults(func=cmd_replay)
 
+    p = sub.add_parser("view", help="render a trace as one self-contained HTML timeline")
+    p.add_argument("trace")
+    p.add_argument("-o", "--output", default="report.html")
+    p.set_defaults(func=cmd_view)
+
+    p = sub.add_parser("demo", help="run a poisoned-webpage attack story and write examples/")
+    p.add_argument("--out-dir", default="examples")
+    p.add_argument("--policy")
+    p.set_defaults(func=cmd_demo)
+
     p = sub.add_parser("overhead", help="measure per-call overhead of the guard")
     p.add_argument("--calls", type=int, default=10_000)
     p.add_argument("--policy")
     p.set_defaults(func=cmd_overhead)
-    _register_unimplemented(parser)
     return parser
-
-
-def _register_unimplemented(parser: argparse.ArgumentParser) -> None:
-    """Placeholder commands, replaced milestone by milestone."""
-    sub = next(a for a in parser._actions if isinstance(a, argparse._SubParsersAction))
-    for name in ("view", "demo"):
-        if name not in sub.choices:
-            sp = sub.add_parser(name, help=f"{name} (see docs)")
-            sp.set_defaults(func=lambda a, n=name: _todo(n))
-
-
-def _todo(name: str) -> int:
-    print(f"abb {name}: not implemented", file=sys.stderr)
-    return 2
 
 
 def main(argv: list[str] | None = None) -> int:

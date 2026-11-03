@@ -13,14 +13,17 @@
 - M4 taint + canaries: session/value labels with k-gram fragment matching (survives copies and encodings), `session_has_all` trifecta, `call_has_taint`, deterministic canary planting, canary detection in raw/URL/hex/base64(any alignment)/base32/reversed/split forms; `canary.exfil` is a hard rule on outbound tools.
 
 - M5 scenario harness + dev suite (93 attacks in 10 categories incl. 3 deliberate known-limitation attacks, 57 benign), `abb bench`, `abb overhead
-abb replay trace.jsonl --policy policies/strict.yaml`, default/strict policies. Results in `docs/results/`.
+abb replay trace.jsonl --policy policies/strict.yaml
+abb demo && abb view examples/demo_trace.jsonl -o report.html`, default/strict policies. Results in `docs/results/`.
 
 - M6 policy frozen (commit `freeze policy for holdout`, tag `holdout-freeze`, hashes in `docs/FREEZE.json`, guarded by `tests/test_freeze.py`); then 10 holdout attacks + 5 benign written and run WITHOUT changing any rule. Holdout result: 4/10 attacks detected, 1/5 benign blocked (see `docs/results/bench_holdout.md`).
 
 - M7 replay: `abb replay trace.jsonl --policy new.yaml [--json]`; verified that replaying every dev scenario trace under its own policy reproduces all live decisions. Recorder now also redacts reversed/base32/hex/base64 canary encodings.
 
+- M8 viewer + demo: `abb view trace.jsonl -o report.html` (single offline file, light/dark, taint chips, redaction marks, chain banner, no innerHTML), `abb demo` writes `examples/demo_trace.jsonl`, `.head`, `demo_report.html`. Checked in headless Chromium (light and dark, no console errors).
+
 ## Not done
-- M8..M9 (see the build brief).
+- M9 overhead measurement + docs (see the build brief).
 
 ## Known issues
 - Holdout misses (by design of the current rules, not fixed because rules are frozen): `ho-a04` awk system(), `ho-a05` symlink creation, `ho-a06` zlib+base64 canary, `ho-a07` paraphrase via GET after hostile input (http_get is not a trifecta channel), `ho-a08` bare AWS secret key, `ho-a09` malicious git hook written inside the workspace.
@@ -36,4 +39,5 @@ abb verify trace.jsonl
 abb bench --suite dev --out docs/results
 abb overhead
 abb replay trace.jsonl --policy policies/strict.yaml
+abb demo && abb view examples/demo_trace.jsonl -o report.html
 ```

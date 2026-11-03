@@ -38,3 +38,6 @@ One line each: decision | reason.
 - Canary rule survives replay under any policy (even `default: allow`) | by design it cannot be configured away
 - Recorder redacts every canary encoding (reversed, base32, hex, base64 alignments), done in recorder.py rather than secrets.py | found while writing replay tests; kept out of frozen detection files so the holdout freeze hashes stay valid
 - The `holdout-freeze` git tag could not be pushed to the remote (the git proxy rejected it); the freeze is identified by commit 021e9aa "freeze policy for holdout" and docs/FREEZE.json | tag exists locally only
+- Viewer embeds trace JSON in an inert `<script type="application/json">` with `<`, `>`, `&` escaped and builds the DOM with textContent only | trace contents are attacker-influenced; a report viewer must not become an XSS vector
+- Viewer parses leniently and shows a red banner instead of refusing a tampered trace | an analyst needs to see what was recorded and where it broke
+- Demo agent keeps going after a denial (tries a fallback exfil path, then does legitimate work) | shows that blocking one call does not stop the session, and that benign work still passes

@@ -38,3 +38,4 @@ select = ["E", "F", "I", "B", "UP", "SIM"]
 [tool.ruff.lint.per-file-ignores]
 "scenarios/**" = ["E501"]  # scenario payloads are data; long strings are clearer unbroken
 "tests/**" = ["E501"]
+"src/agentblackbox/viewer.py" = ["E501"]  # embedded HTML/CSS/JS template
