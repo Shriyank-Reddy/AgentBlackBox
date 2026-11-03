@@ -15,3 +15,17 @@ def test_help_lists_all_commands(capsys):
 def test_no_args_prints_help(capsys):
     assert main([]) == 0
     assert "abb" in capsys.readouterr().out
+
+
+def test_verify_command(tmp_path, capsys):
+    from agentblackbox.recorder import Recorder
+
+    path = tmp_path / "t.jsonl"
+    rec = Recorder(path, session_id="s")
+    rec.append(kind="call", tool="t", args={}, decision="allow")
+    rec.append(kind="call", tool="t", args={}, decision="allow")
+    assert main(["verify", str(path)]) == 0
+    assert "OK" in capsys.readouterr().out
+    path.write_text(path.read_text().replace('"allow"', '"deny"', 1))
+    assert main(["verify", str(path)]) == 1
+    assert "seq 0" in capsys.readouterr().out

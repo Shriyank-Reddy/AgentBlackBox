@@ -1,10 +1,13 @@
 # STATUS
 
 ## Done
-- M0 scaffold: package layout, `abb --help`, pytest/ruff config, MIT license.
+- M0 scaffold.
+- M1 recorder: hash chain, canonical JSON, HMAC-signed head file, redaction
+  (`[REDACTED:<type>:<hash8>]`, also for base64/hex-wrapped secrets), `abb verify`.
+  Tests cover edit, delete, reorder, insert, truncated tail, re-hashed chain, forged head.
 
 ## Not done
-- M1..M9 (see the build brief).
+- M2..M9 (see the build brief).
 
 ## Known issues
 - none yet
@@ -12,7 +15,7 @@
 ## Commands
 ```bash
 pip install -e ".[dev]"
-python -m pytest
+python -m pytest        # note: plain `pytest` may pick up a different interpreter
 ruff check .
-abb --help
+abb verify trace.jsonl
 ```
