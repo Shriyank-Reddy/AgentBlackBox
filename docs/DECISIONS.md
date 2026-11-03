@@ -31,3 +31,6 @@ One line each: decision | reason.
 - Rates: detection truncated, false-positive rate rounded up (one decimal) | never round in our favour
 - Dev-suite tuning: the benign "api_key = YOUR_API_KEY_HERE" lookalike was a real false positive; generic-secret matches whose value starts with a placeholder word (your/example/changeme/<...>) are now ignored | recorded here because it was a rule change made after seeing dev results
 - `abb overhead` is a separate subcommand | keeps `abb bench` output byte-for-byte deterministic while timing numbers are machine-dependent
+- Freeze recorded as a git commit named exactly `freeze policy for holdout`, a tag `holdout-freeze`, and sha256 hashes of the detection code in `docs/FREEZE.json` (checked by a test) | makes "no rule changed after the holdout was seen" verifiable, not just claimed
+- Holdout scenarios deliberately target things I expected to be hard (awk, symlinks, compression, GET-channel exfil) as well as things I expected to be caught | a holdout of only easy variants would flatter the numbers
+- Holdout results were NOT used to change any rule | brief requires separation; gaps are documented as limitations instead
