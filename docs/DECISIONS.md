@@ -9,3 +9,9 @@ One line each: decision | reason.
 - Each tool call writes two events: a `call` event (decision, before running) and a `result` event (summary) | matches the pipeline "record, run, record result"; a crash mid-tool still leaves the decision on record
 - Missing head file makes `verify` fail | without it truncation cannot be ruled out
 - Use `python -m pytest` in docs | a stray `pytest` script on PATH may belong to another interpreter
+- `default: deny` means "tools not listed under `tools:` are denied" (rule id `policy.unknown_tool`) | gives the brief's "unknown tools denied" a concrete, testable meaning
+- Rules are `deny_if` or `flag_if` conditions (never both) | keeps each rule single-purpose; the engine combines them (any deny wins)
+- Allow-list domain entries match exactly; `*.example.com` matches subdomains only | subdomain wildcards are an explicit, reviewable choice
+- Loop counting uses redacted args and counts every attempt, including denied ones | a looping agent is a loop whether or not calls are denied, and replay can recompute the same key from a trace
+- Filesystem tools use an in-memory dict keyed by virtual absolute paths, resolved with the firewall's own `normalize_path` | no real disk access, and guard and tool agree on what a path means
+- Extra modules beyond the layout (`secrets.py`, `clock.py`, `mocktools.py`, later `scenario.py`, `bench.py`) | each has one clear job; avoids dumping grounds

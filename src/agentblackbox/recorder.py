@@ -106,6 +106,7 @@ class Recorder:
         result_summary: Any = None,
         ts: str = "1970-01-01T00:00:00Z",
         extra: dict[str, Any] | None = None,
+        pre_redacted: bool = False,
     ) -> dict[str, Any]:
         event: dict[str, Any] = {
             "seq": len(self.events),
@@ -113,7 +114,7 @@ class Recorder:
             "session_id": self.session_id,
             "kind": kind,
             "tool": tool,
-            "args": self.redact(args),
+            "args": args if pre_redacted else self.redact(args),
             "decision": decision,
             "rule_ids": list(rule_ids or []),
             "taint": taint or {"call": [], "session": []},

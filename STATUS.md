@@ -6,8 +6,10 @@
   (`[REDACTED:<type>:<hash8>]`, also for base64/hex-wrapped secrets), `abb verify`.
   Tests cover edit, delete, reorder, insert, truncated tail, re-hashed chain, forged head.
 
+- M2 guard + policy engine: `Guard.wrap`/`@guard.tool`, enforce/monitor, unknown-tool denial, YAML schema validation with rule/field errors, path/domain/secret/loop/flag rules, mock tools.
+
 ## Not done
-- M2..M9 (see the build brief).
+- M3..M9 (see the build brief).
 
 ## Known issues
 - none yet
