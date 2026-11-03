@@ -68,13 +68,13 @@ def find_secrets(text: str) -> list[SecretHit]:
 
 
 def decode_tokens(text: str):
-    """Yield (token, decoded_text) for base64/hex looking tokens that decode to printable text."""
+    """Yield (token, encoding, decoded_text) for base64/hex tokens that decode to printable text."""
     for rx, decoders in ((_B64_TOKEN, (_b64, _b64url)), (_HEX_TOKEN, (_hex,))):
         for m in rx.finditer(text):
             for dec in decoders:
                 out = dec(m.group(0))
                 if out is not None:
-                    yield m.group(0), out
+                    yield m.group(0), dec.__name__.lstrip("_"), out
                     break
 
 
@@ -116,7 +116,7 @@ def redact_text(text: str, extra_literals: tuple[str, ...] = ()) -> str:
     visibly identical without revealing it.
     """
     # 1. Encoded blobs that hide a secret are replaced whole, before the plain pass.
-    for tok, decoded in list(decode_tokens(text)):
+    for tok, _enc, decoded in list(decode_tokens(text)):
         inner = [h for h in find_secrets(decoded) if not MARKER_RE.fullmatch(h.text)]
         inner += [SecretHit("canary", lit) for lit in extra_literals if lit and lit in decoded]
         if inner:

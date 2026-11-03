@@ -406,4 +406,14 @@ def _compile_arg_condition(spec: dict, where: str) -> Check:
 
 
 # URL oddities that make an allowlist match untrustworthy (set by normalize_url in M3).
-BAD_URL_FLAGS = frozenset({"userinfo", "bad_scheme", "bad_host", "ip_literal", "backslash"})
+BAD_URL_FLAGS = frozenset(
+    {
+        "userinfo",
+        "bad_scheme",
+        "bad_host",
+        "ip_literal",
+        "backslash",
+        "encoded_host",
+        "stripped_control",
+    }
+)

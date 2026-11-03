@@ -15,3 +15,8 @@ One line each: decision | reason.
 - Loop counting uses redacted args and counts every attempt, including denied ones | a looping agent is a loop whether or not calls are denied, and replay can recompute the same key from a trace
 - Filesystem tools use an in-memory dict keyed by virtual absolute paths, resolved with the firewall's own `normalize_path` | no real disk access, and guard and tool agree on what a path means
 - Extra modules beyond the layout (`secrets.py`, `clock.py`, `mocktools.py`, later `scenario.py`, `bench.py`) | each has one clear job; avoids dumping grounds
+- IP-literal hosts, userinfo, backslashes, encoded hosts and control characters never match a domain allowlist | these forms have no legitimate use in an agent's URL and are the classic parser-differential tricks
+- Backslash in a URL is treated as `/` (WHATWG behaviour) and flagged | browsers and urllib disagree, so the safest reading is "suspicious"
+- Shell analysis treats `rm` as safe only when every target resolves under `workspace/`; unresolved `$VAR` targets count as unsafe | an unknown target must be assumed hostile
+- Shell analysis is heuristic and static (no execution, no full shell grammar) | documented as a limitation; the shell tool is a mock anyway
+- Secret-looking text split across several arguments is checked via a joined view | cheap defence against trivial argument splitting

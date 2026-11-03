@@ -8,8 +8,10 @@
 
 - M2 guard + policy engine: `Guard.wrap`/`@guard.tool`, enforce/monitor, unknown-tool denial, YAML schema validation with rule/field errors, path/domain/secret/loop/flag rules, mock tools.
 
+- M3 normalisation: URL (userinfo, lookalikes, IP literal forms, IPv6, case/dots, punycode/mixed script, backslash, bad schemes, encoded host), path (traversal, absolute, `~`, doubled/encoded separators), payload views (URL/base64/hex/nested/zero-width/NFKC/split-across-args), shell obfuscation analysis.
+
 ## Not done
-- M3..M9 (see the build brief).
+- M4..M9 (see the build brief).
 
 ## Known issues
 - none yet
