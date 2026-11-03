@@ -1,0 +1,9 @@
+{
+  "policies/default.yaml": "7e7686cb88bff16330abeb06177654f2c19382c11b166c56d0a19c817c2b2be5",
+  "src/agentblackbox/canary.py": "1b9485d89df7d278c8f17e983bed65b94811218f6084a5aa74fe970167d6846d",
+  "src/agentblackbox/guard.py": "a6201ca41ef4c26616dec6096d074b1a0afba0d58f994a31c940df6179f64610",
+  "src/agentblackbox/normalize.py": "0d0a118b4aed3430773fabf9c900fb206723a23caa232e0ef2f310c9efbf396e",
+  "src/agentblackbox/policy.py": "981cf434e4328aa5904b1b5e73c9869cc9c9a611b2090e8a914fd927f87acaed",
+  "src/agentblackbox/secrets.py": "44278ca23902d9b00a7adf55d28f871ab45b32b68a9a782d5f90054d7532df47",
+  "src/agentblackbox/taint.py": "c60d335e0a0211726a9706122441a433790463841c087e40a2a12369c673cab9"
+}

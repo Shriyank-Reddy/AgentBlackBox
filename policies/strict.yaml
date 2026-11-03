@@ -1,0 +1,56 @@
+# Stricter variant used in the replay example: no shell, smaller allowlist, tighter loop guard,
+# and any untrusted content in the session blocks outbound posts.
+version: 1
+mode: enforce
+default: deny
+sandbox_root: /sandbox
+
+tools: [read_file, write_file, delete_file, list_dir, http_get, http_post, send_email, get_env]
+outbound_tools: [http_get, http_post, send_email, shell]
+
+taint:
+  private_paths: ["workspace/private/", "/home/agent/.ssh/", "/etc/shadow"]
+  untrusted_paths: ["workspace/inbox/", "workspace/downloads/"]
+  private_tools: [get_env]
+  untrusted_tools: [http_get]
+  min_fragment: 12
+
+rules:
+  - id: fs.escape.read
+    tools: [read_file, list_dir]
+    deny_if: { arg: path, not_under: ["workspace/"] }
+    severity: high
+  - id: fs.escape.write
+    tools: [write_file, delete_file]
+    deny_if: { arg: path, not_under: ["workspace/"] }
+    severity: high
+  - id: fs.private.no_read
+    description: Private files are off limits entirely.
+    tools: [read_file, list_dir]
+    deny_if: { arg: path, under: ["workspace/private/"] }
+    severity: high
+  - id: net.egress.allowlist
+    tools: [http_get, http_post]
+    deny_if: { arg: url, domain_not_in: [api.github.com] }
+    severity: high
+  - id: net.email.recipients
+    tools: [send_email]
+    deny_if: { arg: to, email_domain_not_in: [corp.example] }
+    severity: high
+  - id: secrets.in_outbound_args
+    tools: [http_get, http_post, send_email, shell]
+    deny_if: { any_arg_contains: secret }
+    severity: critical
+  - id: exfil.private_fragment
+    tools: [http_get, http_post, send_email, shell]
+    deny_if: { call_has_taint: [private_data] }
+    severity: high
+  - id: exfil.untrusted_outbound
+    description: After reading untrusted content, nothing may be posted or mailed.
+    tools: [http_post, send_email]
+    deny_if: { session_has_any: [untrusted_content] }
+    severity: high
+  - id: loop.guard
+    tools: ["*"]
+    deny_if: { same_call_repeated: 3 }
+    severity: medium
