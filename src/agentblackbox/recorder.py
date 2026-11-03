@@ -15,7 +15,6 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
-import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -72,6 +71,7 @@ class Recorder:
         self.events: list[dict[str, Any]] = []
         self._prev = GENESIS_HASH
         self._fh = None
+        self._head_fh = None
         self.path = Path(path) if path else None
         if self.path:
             # "x" refuses to clobber an existing trace: evidence should not vanish silently.
@@ -147,16 +147,27 @@ class Recorder:
         return {"count": n, "last_hash": self._prev, "sig": _sign(self.key, n, self._prev)}
 
     def _write_head(self) -> None:
+        """Rewrite the head in place (no rename: that costs ~1 ms per event).
+
+        A crash mid-write leaves a torn head, which fails signature checking: the failure
+        mode is "verify says broken", never "verify says fine".
+        """
         assert self.path is not None
-        hp = head_path_for(self.path)
-        tmp = hp.with_name(hp.name + ".tmp")
-        tmp.write_text(json.dumps(self.head()), encoding="utf-8")
-        os.replace(tmp, hp)  # atomic: a reader never sees half a head
+        if self._head_fh is None:
+            self._head_fh = open(head_path_for(self.path), "w", encoding="utf-8")  # noqa: SIM115
+        fh = self._head_fh
+        fh.seek(0)
+        fh.write(json.dumps(self.head()))
+        fh.truncate()
+        fh.flush()
 
     def close(self) -> None:
         if self._fh:
             self._fh.close()
             self._fh = None
+        if self._head_fh:
+            self._head_fh.close()
+            self._head_fh = None
 
 
 # ---- verification --------------------------------------------------------

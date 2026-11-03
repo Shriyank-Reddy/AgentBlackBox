@@ -1,0 +1,5 @@
+Overhead over 10000 guarded read_file calls (trace written to a real file)
+  machine:                Linux x86_64, CPython 3.13.18
+  unguarded median:       2.11 us
+  guarded median / p95:   129.18 / 348.93 us
+  added median / p95:     127.07 / 346.82 us

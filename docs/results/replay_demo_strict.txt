@@ -1,0 +1,11 @@
+Replay of examples/demo_trace.jsonl (8 calls) under policies/strict.yaml
+
+Would now be DENIED: 1
+  seq   6  read_file   path=workspace/private/customers.csv
+           flag -> deny   rules: fs.private.no_read
+
+Would now be ALLOWED: 0
+
+Flag status changed: 0
+
+Summary: 1 newly denied, 0 newly allowed, 0 flag changes, 7 unchanged

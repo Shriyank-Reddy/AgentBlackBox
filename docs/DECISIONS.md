@@ -41,3 +41,7 @@ One line each: decision | reason.
 - Viewer embeds trace JSON in an inert `<script type="application/json">` with `<`, `>`, `&` escaped and builds the DOM with textContent only | trace contents are attacker-influenced; a report viewer must not become an XSS vector
 - Viewer parses leniently and shows a red banner instead of refusing a tampered trace | an analyst needs to see what was recorded and where it broke
 - Demo agent keeps going after a denial (tries a fallback exfil path, then does legitimate work) | shows that blocking one call does not stop the session, and that benign work still passes
+- Head file is rewritten in place after every event instead of via temp-file rename | profiling showed the rename cost about 1 ms per event; a torn write fails signature checking, so the failure mode stays safe
+- README is generated from `docs/README.template.md` by `scripts/build_readme.py`, and `tests/test_readme.py` checks it against a fresh bench run | brief requires README numbers to match `abb bench` exactly
+- Overhead is measured with the 60-call session budget rule removed and distinct arguments per call | otherwise the guard would start denying and the timing would measure the deny path
+- Demo, quickstart and bench use mock tools only; `examples/` output is committed and deterministic | reviewers can open the report without running anything
