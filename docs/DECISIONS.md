@@ -20,3 +20,7 @@ One line each: decision | reason.
 - Shell analysis treats `rm` as safe only when every target resolves under `workspace/`; unresolved `$VAR` targets count as unsafe | an unknown target must be assumed hostile
 - Shell analysis is heuristic and static (no execution, no full shell grammar) | documented as a limitation; the shell tool is a mock anyway
 - Secret-looking text split across several arguments is checked via a joined view | cheap defence against trivial argument splitting
+- Canary check runs only for outbound tools (`outbound_tools`, default http_get/http_post/send_email/shell) | brief defines canary exfiltration as appearing in an outbound tool's arguments; writing a canary inside the workspace is not exfiltration
+- Taint fragment matching uses hashed k-grams (k = `min_fragment`, default 16), skipping low-entropy grams; values shorter than k but >= 6 chars are matched whole | keeps "meaningful fragment" concrete and avoids tainting on whitespace or repeated characters
+- Tool results are tainted by value as well as by label: a result that contains a fragment of an earlier tainted value inherits its label | models copy-through-a-file laundering
+- Replay reuses the taint labels recorded in the trace instead of recomputing them | result contents are not stored in full, only a summary

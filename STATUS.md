@@ -10,8 +10,10 @@
 
 - M3 normalisation: URL (userinfo, lookalikes, IP literal forms, IPv6, case/dots, punycode/mixed script, backslash, bad schemes, encoded host), path (traversal, absolute, `~`, doubled/encoded separators), payload views (URL/base64/hex/nested/zero-width/NFKC/split-across-args), shell obfuscation analysis.
 
+- M4 taint + canaries: session/value labels with k-gram fragment matching (survives copies and encodings), `session_has_all` trifecta, `call_has_taint`, deterministic canary planting, canary detection in raw/URL/hex/base64(any alignment)/base32/reversed/split forms; `canary.exfil` is a hard rule on outbound tools.
+
 ## Not done
-- M4..M9 (see the build brief).
+- M5..M9 (see the build brief).
 
 ## Known issues
 - none yet

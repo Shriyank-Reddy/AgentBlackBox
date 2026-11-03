@@ -18,6 +18,7 @@ from .taint import LABELS, TaintConfig
 SEVERITIES = ("low", "medium", "high", "critical")
 RULE_UNKNOWN_TOOL = "policy.unknown_tool"
 RULE_CANARY = "canary.exfil"
+DEFAULT_OUTBOUND = ["http_get", "http_post", "send_email", "shell"]
 
 
 class PolicyError(ValueError):
@@ -132,7 +133,9 @@ def parse_policy(data: Any) -> Policy:
     root = data.get("sandbox_root", "/sandbox")
     if not isinstance(root, str) or not root.startswith("/"):
         raise PolicyError("policy: field 'sandbox_root' must be an absolute path string")
-    outbound = _str_list(data.get("outbound_tools", []), "policy: field 'outbound_tools'")
+    outbound = _str_list(
+        data.get("outbound_tools", DEFAULT_OUTBOUND), "policy: field 'outbound_tools'"
+    )
     taint = _parse_taint(data.get("taint") or {})
     raw_rules = data.get("rules", [])
     if not isinstance(raw_rules, list):
