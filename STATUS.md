@@ -14,8 +14,10 @@
 
 - M5 scenario harness + dev suite (93 attacks in 10 categories incl. 3 deliberate known-limitation attacks, 57 benign), `abb bench`, `abb overhead`, default/strict policies. Results in `docs/results/`.
 
+- M6 (part 1) policy and rule code frozen; hashes in `docs/FREEZE.json`, guarded by `tests/test_freeze.py`.
+
 ## Not done
-- M6..M9 (see the build brief).
+- M6 (part 2) holdout scenarios, M7..M9 (see the build brief).
 
 ## Known issues
 - none yet
