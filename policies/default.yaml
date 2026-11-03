@@ -1,0 +1,92 @@
+# Default AgentBlackBox policy. Schema: docs/POLICY.md
+version: 1
+mode: enforce
+default: deny           # tools not listed under `tools` are denied (policy.unknown_tool)
+sandbox_root: /sandbox  # virtual root; relative paths resolve against it
+
+tools: [read_file, write_file, delete_file, list_dir, shell, http_get, http_post, send_email, get_env]
+outbound_tools: [http_get, http_post, send_email, shell]
+
+taint:
+  private_paths: ["workspace/private/", "/home/agent/.ssh/", "/etc/shadow"]
+  untrusted_paths: ["workspace/inbox/", "workspace/downloads/"]
+  private_tools: [get_env]
+  untrusted_tools: [http_get]
+  min_fragment: 16
+
+rules:
+  # --- filesystem -------------------------------------------------------------
+  - id: fs.escape.read
+    description: Reads must stay inside the workspace.
+    tools: [read_file, list_dir]
+    deny_if: { arg: path, not_under: ["workspace/"] }
+    severity: high
+  - id: fs.escape.write
+    description: Writes and deletes must stay inside the workspace.
+    tools: [write_file, delete_file]
+    deny_if: { arg: path, not_under: ["workspace/"] }
+    severity: high
+
+  # --- network ----------------------------------------------------------------
+  - id: net.egress.allowlist
+    description: Only allow-listed hosts (after URL normalisation) may be contacted.
+    tools: [http_get, http_post]
+    deny_if:
+      arg: url
+      domain_not_in: [api.github.com, github.com, pypi.org, docs.python.org, "*.readthedocs.io"]
+    severity: high
+  - id: net.egress.shell_urls
+    description: URLs inside shell commands obey the same allowlist.
+    tools: [shell]
+    deny_if:
+      arg: command
+      urls_not_in: [api.github.com, github.com, pypi.org, docs.python.org, "*.readthedocs.io"]
+    severity: high
+  - id: net.email.recipients
+    description: Mail may only go to company addresses.
+    tools: [send_email]
+    deny_if: { arg: to, email_domain_not_in: [corp.example] }
+    severity: high
+
+  # --- shell ------------------------------------------------------------------
+  - id: shell.dangerous
+    description: Destructive, obfuscated or remote-code-execution shell patterns.
+    tools: [shell]
+    deny_if: { arg: command, shell_dangerous: true }
+    severity: critical
+
+  # --- secrets and exfiltration -----------------------------------------------
+  - id: secrets.in_outbound_args
+    description: No credentials in anything that leaves the machine.
+    tools: [http_get, http_post, send_email, shell]
+    deny_if: { any_arg_contains: secret }
+    severity: critical
+  - id: exfil.private_fragment
+    description: Outbound arguments must not contain pieces of private data.
+    tools: [http_get, http_post, send_email, shell]
+    deny_if: { call_has_taint: [private_data] }
+    severity: high
+  - id: exfil.trifecta
+    description: Private data + untrusted content + an outbound channel in one session.
+    tools: [http_post, send_email]
+    deny_if: { session_has_all: [private_data, untrusted_content] }
+    severity: critical
+
+  # --- runaway behaviour ------------------------------------------------------
+  - id: loop.guard
+    description: The same call five times is a loop.
+    tools: ["*"]
+    deny_if: { same_call_repeated: 5 }
+    severity: medium
+  - id: budget.calls
+    description: Hard cap on calls per session.
+    tools: ["*"]
+    deny_if: { session_call_count_over: 60 }
+    severity: medium
+
+  # --- review markers (allowed, but surfaced) --------------------------------
+  - id: review.private_read
+    description: Reading private data is allowed but flagged for review.
+    tools: [read_file]
+    flag_if: { arg: path, under: ["workspace/private/"] }
+    severity: low

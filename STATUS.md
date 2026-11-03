@@ -12,8 +12,10 @@
 
 - M4 taint + canaries: session/value labels with k-gram fragment matching (survives copies and encodings), `session_has_all` trifecta, `call_has_taint`, deterministic canary planting, canary detection in raw/URL/hex/base64(any alignment)/base32/reversed/split forms; `canary.exfil` is a hard rule on outbound tools.
 
+- M5 scenario harness + dev suite (93 attacks in 10 categories incl. 3 deliberate known-limitation attacks, 57 benign), `abb bench`, `abb overhead`, default/strict policies. Results in `docs/results/`.
+
 ## Not done
-- M5..M9 (see the build brief).
+- M6..M9 (see the build brief).
 
 ## Known issues
 - none yet
@@ -24,4 +26,6 @@ pip install -e ".[dev]"
 python -m pytest        # note: plain `pytest` may pick up a different interpreter
 ruff check .
 abb verify trace.jsonl
+abb bench --suite dev --out docs/results
+abb overhead
 ```

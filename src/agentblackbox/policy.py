@@ -220,6 +220,7 @@ ARG_OPS = {
     "domain_not_in",
     "domain_in",
     "urls_not_in",
+    "email_domain_not_in",
     "matches",
     "shell_dangerous",
 }
@@ -382,6 +383,22 @@ def _compile_arg_condition(spec: dict, where: str) -> Check:
             return None
 
         return path_check
+    if op == "email_domain_not_in":
+
+        def email_check(ctx: EvalContext) -> str | None:
+            t = ctx.norm.arg_text(arg)
+            if t is None:
+                return None
+            for addr in (a.strip() for a in re.split(r"[,;]", t) if a.strip()):
+                m = re.search(r"<([^<>]*)>\s*$", addr)
+                addr = m.group(1) if m else addr
+                if addr.count("@") != 1 or not host_matches(
+                    addr.split("@")[1].strip().lower(), items
+                ):
+                    return f"recipient '{addr}' in '{arg}' is not on the allowed domains"
+            return None
+
+        return email_check
     if op == "urls_not_in":
 
         def urls_check(ctx: EvalContext) -> str | None:

@@ -41,6 +41,16 @@ SECRET_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("canary", re.compile(CANARY_PREFIX + r"[A-Za-z0-9_]{4,}")),
 ]
 
+# Documentation placeholders such as "api_key = YOUR_API_KEY_HERE" are not secrets.
+_PLACEHOLDER = re.compile(
+    r"(?i)[:=][\"']?\s*(?:your|<|\$\{|example|changeme|xxx|placeholder|dummy|sample|insert|replace|\*+)"
+)
+
+
+def _real(kind: str, m: re.Match[str]) -> bool:
+    return not (kind == "generic_secret" and _PLACEHOLDER.search(m.group(0)))
+
+
 # Markers left behind by redaction. Replay re-reads redacted traces, so a marker
 # must itself count as "a secret was here".
 MARKER_RE = re.compile(r"\[REDACTED:([a-z_]+):([0-9a-f]{8})\]")
@@ -62,7 +72,12 @@ def marker(kind: str, value: str) -> str:
 
 def find_secrets(text: str) -> list[SecretHit]:
     """Secrets in ``text`` itself (no decoding). Redaction markers count as hits."""
-    hits = [SecretHit(k, m.group(0)) for k, rx in SECRET_PATTERNS for m in rx.finditer(text)]
+    hits = [
+        SecretHit(k, m.group(0))
+        for k, rx in SECRET_PATTERNS
+        for m in rx.finditer(text)
+        if _real(k, m)
+    ]
     hits += [SecretHit(m.group(1), m.group(0)) for m in MARKER_RE.finditer(text)]
     return hits
 
@@ -127,5 +142,7 @@ def redact_text(text: str, extra_literals: tuple[str, ...] = ()) -> str:
             text = text.replace(lit, marker("canary", lit))
     # 3. Pattern secrets in plain text.
     for kind, rx in SECRET_PATTERNS:
-        text = rx.sub(lambda m, kind=kind: marker(kind, m.group(0)), text)
+        text = rx.sub(
+            lambda m, kind=kind: marker(kind, m.group(0)) if _real(kind, m) else m.group(0), text
+        )
     return text

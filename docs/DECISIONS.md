@@ -24,3 +24,10 @@ One line each: decision | reason.
 - Taint fragment matching uses hashed k-grams (k = `min_fragment`, default 16), skipping low-entropy grams; values shorter than k but >= 6 chars are matched whole | keeps "meaningful fragment" concrete and avoids tainting on whitespace or repeated characters
 - Tool results are tainted by value as well as by label: a result that contains a fragment of an earlier tainted value inherits its label | models copy-through-a-file laundering
 - Replay reuses the taint labels recorded in the trace instead of recomputing them | result contents are not stored in full, only a summary
+- One scenario module per category, each exporting a `SCENARIOS` list (some generated from tables) | the brief's "small Python file per scenario" would mean ~150 near-identical files; one file per category stays readable
+- Scripted agents stop at the first denied call | models an agent giving up; also keeps "detected" meaning "a call was stopped"
+- A scenario's `expected_rules` is a "right reason" check, reported separately from detection | stops a lucky block by an unrelated rule from looking like a success
+- Three attacks are deliberately kept in the dev suite that the design cannot stop (ROT13 canary, paraphrased leak without untrusted input, canary split across calls) | honest numbers: detection is not 100% by construction
+- Rates: detection truncated, false-positive rate rounded up (one decimal) | never round in our favour
+- Dev-suite tuning: the benign "api_key = YOUR_API_KEY_HERE" lookalike was a real false positive; generic-secret matches whose value starts with a placeholder word (your/example/changeme/<...>) are now ignored | recorded here because it was a rule change made after seeing dev results
+- `abb overhead` is a separate subcommand | keeps `abb bench` output byte-for-byte deterministic while timing numbers are machine-dependent

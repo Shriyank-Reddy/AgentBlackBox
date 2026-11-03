@@ -29,3 +29,11 @@ def test_verify_command(tmp_path, capsys):
     path.write_text(path.read_text().replace('"allow"', '"deny"', 1))
     assert main(["verify", str(path)]) == 1
     assert "seq 0" in capsys.readouterr().out
+
+
+def test_bench_and_overhead_commands(tmp_path, capsys):
+    assert main(["bench", "--suite", "dev", "--out", str(tmp_path)]) == 0
+    assert "All attacks" in capsys.readouterr().out
+    assert (tmp_path / "bench_dev.json").exists()
+    assert main(["overhead", "--calls", "200"]) == 0
+    assert "added median" in capsys.readouterr().out

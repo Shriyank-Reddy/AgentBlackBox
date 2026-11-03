@@ -194,3 +194,9 @@ def test_find_secrets_types():
     assert find_secrets("the password field is required") == []
     assert find_secrets("password = hunter2hunter2xx")  # assignment with a real-looking value
     assert find_secrets("ghp_" + "a" * 36)
+
+
+def test_placeholder_assignments_are_not_secrets():
+    assert not find_secrets("Set api_key = YOUR_API_KEY_HERE in your config file.")
+    assert not find_secrets('password: "<your-password-here>"')
+    assert find_secrets("api_key = Zx81QpLm20aBc9d")
