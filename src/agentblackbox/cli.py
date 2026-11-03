@@ -63,6 +63,25 @@ def cmd_overhead(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_replay(args: argparse.Namespace) -> int:
+    import json
+
+    from .policy import PolicyError, load_policy
+    from .replay import format_report, replay_trace
+
+    try:
+        policy = load_policy(args.policy)
+    except (PolicyError, OSError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    report = replay_trace(args.trace, policy, key=_key())
+    if args.json:
+        print(json.dumps(report.to_dict(), indent=2, sort_keys=True))
+    else:
+        print(format_report(report, args.trace, args.policy))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="abb", description="AgentBlackBox: flight recorder and policy firewall for AI agents."
@@ -81,6 +100,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--out", help="directory for bench_<suite>.json / .md files")
     p.set_defaults(func=cmd_bench)
 
+    p = sub.add_parser("replay", help="re-evaluate a recorded trace under a different policy")
+    p.add_argument("trace")
+    p.add_argument("--policy", required=True, help="the new policy YAML")
+    p.add_argument("--json", action="store_true", help="machine-readable output")
+    p.set_defaults(func=cmd_replay)
+
     p = sub.add_parser("overhead", help="measure per-call overhead of the guard")
     p.add_argument("--calls", type=int, default=10_000)
     p.add_argument("--policy")
@@ -92,7 +117,7 @@ def build_parser() -> argparse.ArgumentParser:
 def _register_unimplemented(parser: argparse.ArgumentParser) -> None:
     """Placeholder commands, replaced milestone by milestone."""
     sub = next(a for a in parser._actions if isinstance(a, argparse._SubParsersAction))
-    for name in ("replay", "view", "demo"):
+    for name in ("view", "demo"):
         if name not in sub.choices:
             sp = sub.add_parser(name, help=f"{name} (see docs)")
             sp.set_defaults(func=lambda a, n=name: _todo(n))

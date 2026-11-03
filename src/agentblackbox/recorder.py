@@ -20,7 +20,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from .secrets import redact_text
+from .canary import variants as canary_variants
+from .secrets import marker, redact_text
 
 GENESIS_HASH = "0" * 64
 DEFAULT_HEAD_KEY = b"agentblackbox-demo-head-key"  # demo only; see docs/THREAT_MODEL.md
@@ -59,6 +60,13 @@ class Recorder:
     ) -> None:
         self.session_id = session_id
         self.canaries = tuple(canaries or ())
+        # Every encoding of a canary (reversed, base32, hex, ...) must stay out of the trace too.
+        self._canary_needles = [
+            (needle, marker("canary", tok))
+            for tok in self.canaries
+            for enc, needle in canary_variants(tok)
+            if enc != "raw" and len(needle) >= 12
+        ]
         self.key = key
         self.preview_chars = preview_chars
         self.events: list[dict[str, Any]] = []
@@ -75,6 +83,8 @@ class Recorder:
         """Recursively redact strings; cap very long strings."""
         if isinstance(value, str):
             s = redact_text(value, self.canaries)
+            for needle, repl in self._canary_needles:
+                s = s.replace(needle, repl)
             if len(s) <= MAX_STR:
                 return s
             return s[:MAX_STR] + f"...[truncated {len(s) - MAX_STR} chars]"

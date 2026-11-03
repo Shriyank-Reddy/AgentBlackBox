@@ -34,3 +34,7 @@ One line each: decision | reason.
 - Freeze recorded as a git commit named exactly `freeze policy for holdout`, a tag `holdout-freeze`, and sha256 hashes of the detection code in `docs/FREEZE.json` (checked by a test) | makes "no rule changed after the holdout was seen" verifiable, not just claimed
 - Holdout scenarios deliberately target things I expected to be hard (awk, symlinks, compression, GET-channel exfil) as well as things I expected to be caught | a holdout of only easy variants would flatter the numbers
 - Holdout results were NOT used to change any rule | brief requires separation; gaps are documented as limitations instead
+- Replay uses recorded taint labels and redacted args; redaction markers count as secrets/canaries when re-evaluated | lets a trace be replayed without ever holding the original secrets; checked by replaying all dev traces under the same policy
+- Canary rule survives replay under any policy (even `default: allow`) | by design it cannot be configured away
+- Recorder redacts every canary encoding (reversed, base32, hex, base64 alignments), done in recorder.py rather than secrets.py | found while writing replay tests; kept out of frozen detection files so the holdout freeze hashes stay valid
+- The `holdout-freeze` git tag could not be pushed to the remote (the git proxy rejected it); the freeze is identified by commit 021e9aa "freeze policy for holdout" and docs/FREEZE.json | tag exists locally only
